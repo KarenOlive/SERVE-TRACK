@@ -14,21 +14,29 @@ export async function POST(request) {
     const token = authHeader.replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    const { studentId, universityId, major } = await request.json();
+    const { organization_name, location, contact_phone } = await request.json();
+
+    // Validate required fields
+    if (!organization_name || !location || !contact_phone) {
+      return NextResponse.json(
+        { error: 'Organization name, location and phone contact are required' },
+        { status: 400 }
+      );
+    }
 
     connection = await db.getConnection();
     await connection.beginTransaction();
 
     try {
-      // Update student profile
+      // Update nonprofit profile with basic information
       await connection.execute(
-        `UPDATE student_profiles 
-         SET student_id = ?, university_id = ?, major = ?
+        `UPDATE sites_profiles 
+         SET organization_name = ?, location = ?, contact_phone = ?
          WHERE user_id = ?`,
-        [studentId, universityId, major, decoded.userId]
+        [organization_name, location, contact_phone, decoded.userId]
       );
 
-      // Mark user profile as complete
+      // Mark user profile as complete (they have the minimum required info)
       await connection.execute(
         'UPDATE users SET profile_complete = TRUE WHERE id = ?',
         [decoded.userId]
@@ -37,7 +45,7 @@ export async function POST(request) {
       await connection.commit();
 
       return NextResponse.json({
-        message: 'Profile completed successfully'
+        message: 'Organization profile updated successfully'
       });
 
     } catch (error) {
@@ -46,7 +54,7 @@ export async function POST(request) {
     }
 
   } catch (error) {
-    console.error('Profile completion error:', error);
+    console.error('Nonprofit profile completion error:', error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

@@ -14,39 +14,29 @@ export async function POST(request) {
     const token = authHeader.replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    const { studentId, universityId, major } = await request.json();
+    const { organization_description, website, address } = await request.json();
 
     connection = await db.getConnection();
-    await connection.beginTransaction();
 
     try {
-      // Update student profile
+      // Update nonprofit profile with additional details
       await connection.execute(
-        `UPDATE student_profiles 
-         SET student_id = ?, university_id = ?, major = ?
+        `UPDATE sites_profiles 
+         SET organization_description = ?, website = ?, address = ?
          WHERE user_id = ?`,
-        [studentId, universityId, major, decoded.userId]
+        [organization_description, website, address, decoded.userId]
       );
-
-      // Mark user profile as complete
-      await connection.execute(
-        'UPDATE users SET profile_complete = TRUE WHERE id = ?',
-        [decoded.userId]
-      );
-
-      await connection.commit();
 
       return NextResponse.json({
-        message: 'Profile completed successfully'
+        message: 'Organization details updated successfully'
       });
 
     } catch (error) {
-      await connection.rollback();
       throw error;
     }
 
   } catch (error) {
-    console.error('Profile completion error:', error);
+    console.error('Organization details update error:', error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

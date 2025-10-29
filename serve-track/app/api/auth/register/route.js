@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/database';
+import db from '@/lib/database';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -18,7 +18,7 @@ export async function POST(request) {
       );
     }
 
-    connection = await pool.getConnection();
+    connection = await db.getConnection();
     await connection.beginTransaction();
 
     try {
@@ -73,11 +73,14 @@ export async function POST(request) {
           'INSERT INTO student_profiles (user_id) VALUES (?)',
           [userId]
         );
+        console.log('Empty nonprofit profile created');
+
       } else if (role === 'nonprofit') {
         await connection.execute(
           'INSERT INTO sites_profiles (user_id) VALUES (?)',
           [userId]
         );
+        console.log('Empty nonprofit profile created');
       }
 
       await connection.commit();

@@ -35,7 +35,7 @@ export default function Register() {
               Register your nonprofit organization to post opportunities and manage volunteers.
             </p>
             <a
-              href="/register/nonprofit"
+              href="/register/sites"
               className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 block text-center"
             >
               Register Organization
