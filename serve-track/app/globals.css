@@ -1,26 +1,40 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Main App Theme */
+  --color-royal-blue: #264E86;
+  --color-light-grey: #f8fafc;
+  --color-gold: #d4af37;
+  
+  /* Role-based Colors */
+  --color-student-primary: #264E86;
+  --color-student-light: #dbeafe;
+  --color-student-dark: #1e40af;
+  
+  --color-nonprofit-primary: #059669;
+  --color-nonprofit-light: #d1fae5;
+  --color-nonprofit-dark: #047857;
+  
+  --color-admin-primary: #7c3aed;
+  --color-admin-light: #ede9fe;
+  --color-admin-dark: #5b21b6;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Custom utility classes for role-based theming */
+.role-student {
+  --color-primary: var(--color-student-primary);
+  --color-light: var(--color-student-light);
+  --color-dark: var(--color-student-dark);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.role-nonprofit {
+  --color-primary: var(--color-nonprofit-primary);
+  --color-light: var(--color-nonprofit-light);
+  --color-dark: var(--color-nonprofit-dark);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.role-admin {
+  --color-primary: var(--color-admin-primary);
+  --color-light: var(--color-admin-light);
+  --color-dark: var(--color-admin-dark);
 }

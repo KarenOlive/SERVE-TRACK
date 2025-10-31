@@ -31,3 +31,11 @@ export function getCurrentUser(request) {
   
   return verifyToken(token);
 }
+
+// NEW FUNCTION: Async version for API routes that need to await
+export async function getCurrentUserAsync(request) {
+  const token = getTokenFromRequest(request);
+  if (!token) return null;
+  
+  return verifyToken(token);
+}
