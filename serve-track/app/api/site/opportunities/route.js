@@ -1,6 +1,6 @@
 import db from '../../../../lib/database';
 import { getCurrentUser } from '../../../../lib/auth';
-
+import normalizeOpportunity from '../../../../lib/normalizeOpportunity';
 // GET /api/site/opportunities - List opportunities
 export async function GET(request) {
   try {
@@ -77,11 +77,12 @@ export async function POST(request) {
       [result.insertId]
     );
 
+    const opportunity = normalizeOpportunity(newOpportunity[0]);
+
     return new Response(
       JSON.stringify({ 
         message: 'Opportunity created successfully',
-        opportunity: newOpportunity[0]
-      }),
+        opportunity}),
       { 
         status: 201,
         headers: { 'Content-Type': 'application/json' }

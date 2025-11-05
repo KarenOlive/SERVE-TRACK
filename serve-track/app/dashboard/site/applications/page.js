@@ -9,28 +9,32 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState('pending');
   const { addToast, ToastContainer } = useToast();
+  const [reloading, setReloading] = useState(false);
 
   useEffect(() => {
     fetchApplications();
   }, [selectedStatus]);
 
-  const fetchApplications = async () => {
+  const fetchApplications = async (isRefresh = false) => {
     try {
+      if (isRefresh) setReloading(true);
+      else setLoading(true);
+  
       const token = localStorage.getItem('token');
       const url = selectedStatus 
         ? `/api/site/applications?status=${selectedStatus}`
         : '/api/site/applications';
-
+  
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to fetch applications');
       }
-
+  
       const data = await response.json();
       setApplications(data.applications || []);
       setCounts(data.counts || {});
@@ -38,9 +42,11 @@ export default function ApplicationsPage() {
       console.error('Error fetching applications:', error);
       addToast('Failed to load applications', 'error');
     } finally {
-      setLoading(false);
+      if (isRefresh) setReloading(false);
+      else setLoading(false);
     }
   };
+  
 
   const handleApplicationAction = async (applicationId, action, rejectionReason = '') => {
     try {
@@ -51,30 +57,48 @@ export default function ApplicationsPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           status: action,
           rejectionReason: action === 'rejected' ? rejectionReason : null
         })
       });
-
+  
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error(`Failed to ${action} application`);
+        throw new Error(data.error || `Failed to ${action} application`);
       }
-
-      setApplications(prev => prev.filter(app => app.id !== applicationId));
-      addToast(`Application ${action} successfully!`, 'success');
-      
+  
+      const updatedApp = data.application;
+  
+      // Instantly remove from current tab if moved to another status
+      setApplications(prev =>
+        updatedApp.status !== selectedStatus
+          ? prev.filter(app => app.id !== updatedApp.id)
+          : prev.map(app =>
+              app.id === updatedApp.id
+                ? { ...app, status: updatedApp.status, rejection_reason: updatedApp.rejection_reason }
+                : app
+            )
+      );
+  
       // Update counts
-      setCounts(prev => ({
-        ...prev,
-        [selectedStatus]: (prev[selectedStatus] || 1) - 1,
-        [action]: (prev[action] || 0) + 1
-      }));
+      setCounts(prev => {
+        const updated = { ...prev };
+        if (updated[selectedStatus] > 0) updated[selectedStatus] -= 1;
+        updated[action] = (updated[action] || 0) + 1;
+        return updated;
+      });
+  
+      //Trigger re-fetch from backend to ensure UI stays in sync
+      fetchApplications(true); // Smooth refresh after approve/reject
+  
+      addToast(`Application ${action} successfully!`, 'success');
     } catch (error) {
       console.error('Error updating application:', error);
       addToast(`Failed to ${action} application`, 'error');
     }
   };
+  
 
   const getStatusBadge = (status) => {
     const statusColors = {
@@ -122,7 +146,7 @@ export default function ApplicationsPage() {
               onClick={() => setSelectedStatus(status)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedStatus === status
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-green-600 text-black'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -152,8 +176,15 @@ export default function ApplicationsPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="relative bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
+            {reloading && (
+              <div className="absolute inset-0 bg-white bg-opacity-60 flex flex-col items-center justify-center z-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                <p className="text-sm text-gray-700 mt-2">Refreshing applications...</p>
+              </div>
+            )}
+
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>

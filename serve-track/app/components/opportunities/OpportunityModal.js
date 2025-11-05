@@ -38,9 +38,14 @@ export default function OpportunityModal({
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to save opportunity');
 
-       // Always use backend response
-      onSuccess(data.opportunity);
-      onClose();
+       // Refetch from backend for freshest data (e.g., location, timestamps)
+      const freshResponse = await fetch(`/api/site/opportunities/${data.opportunity.id}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const freshData = await freshResponse.json();
+
+        onSuccess(freshData.opportunity);
+        onClose();
     
     } catch (error) {
       console.error('Save opportunity error:', error);

@@ -13,7 +13,9 @@ export async function PATCH(request, { params }) {
     }
 
     const { id } = params;
-    const { status, rejectionReason } = await request.json();
+    const body = await request.json();
+    const status = body.status?.toLowerCase();
+    const rejectionReason = body.rejectionReason || null;
 
     if (!['approved', 'rejected'].includes(status)) {
       return new Response(
@@ -22,9 +24,9 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    // Verify the application belongs to this nonprofit's opportunity
+    // Verify that this application belongs to this nonprofit
     const [applications] = await db.execute(
-      `SELECT a.* 
+      `SELECT a.id 
        FROM applications a
        JOIN opportunities o ON a.opportunity_id = o.id
        WHERE a.id = ? AND o.site_id = ?`,
@@ -33,22 +35,45 @@ export async function PATCH(request, { params }) {
 
     if (applications.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Application not found' }),
+        JSON.stringify({ error: 'Application not found or unauthorized' }),
         { status: 404 }
       );
     }
 
-    // Update application status
+    // Update application status and clear rejection reason when approved
     await db.execute(
       `UPDATE applications 
-       SET status = ?, reviewed_at = NOW(), reviewed_by = ?, rejection_reason = ?
+       SET 
+         status = ?, 
+         reviewed_at = NOW(), 
+         reviewed_by = ?, 
+         rejection_reason = ?
        WHERE id = ?`,
-      [status, user.id, rejectionReason || null, id]
+      [
+        status,
+        user.id,
+        status === 'rejected' ? rejectionReason : null,
+        id
+      ]
+    );
+
+    // Optionally return the updated record
+    const [updated] = await db.execute(
+      `SELECT 
+         a.id,
+         a.status,
+         a.reviewed_at,
+         a.rejection_reason,
+         a.opportunity_id
+       FROM applications a
+       WHERE a.id = ?`,
+      [id]
     );
 
     return new Response(
       JSON.stringify({ 
-        message: `Application ${status} successfully`
+        message: `Application ${status} successfully`,
+        application: updated[0]
       }),
       { 
         status: 200,

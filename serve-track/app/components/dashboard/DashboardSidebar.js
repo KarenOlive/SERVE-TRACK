@@ -43,7 +43,7 @@ const navigation = {
     { name: 'Organization Profile', href: '/dashboard/site/profile', icon: '🏢' },
     { name: 'Manage Opportunities', href: '/dashboard/site/opportunities', icon: '💼' },
     { name: 'Applications', href: '/dashboard/site/applications', icon: '📨' },
-    { name: 'Hour Verification', href: '/dashboard/site/verification', icon: '✅' },
+    { name: 'Hour Verification', href: '/dashboard/site/verifications', icon: '✅' },
     { name: 'Impact Reports', href: '/dashboard/site/reports', icon: '📈' },
   ],
   admin: [

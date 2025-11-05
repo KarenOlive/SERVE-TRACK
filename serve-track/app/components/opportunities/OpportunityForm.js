@@ -18,21 +18,33 @@ export default function OpportunityForm({ onSubmit, onCancel, initialData = {}, 
    // Sync formData whenever initialData changes (important for Edit mode)
    useEffect(() => {
     if (initialData) {
-      const formatDate = (dateValue) => {
+      const formatLocalDate = (dateValue) => {
         if (!dateValue) return '';
+        // If it's already in YYYY-MM-DD format, return as-is
+        if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+          return dateValue;
+        }
+      
         const d = new Date(dateValue);
         if (isNaN(d.getTime())) return '';
-        return d.toISOString().split('T')[0]; // convert to YYYY-MM-DD
+      
+        // Construct local date manually
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
       };
+      
       
       setFormData({
         title: initialData.title || '',
         description: initialData.description || '',
-        startDate: formatDate(initialData.startDate || initialData.start_date),
-        endDate: formatDate(initialData.endDate || initialData.end_date),
+        startDate: formatLocalDate(initialData.startDate || initialData.start_date),
+        endDate: formatLocalDate(initialData.endDate || initialData.end_date),
         estimatedHours: initialData.estimatedHours || initialData.estimated_hours || '',
         volunteersNeeded: initialData.volunteersNeeded || initialData.volunteers_needed || 1,
       });
+      
       
     }
   }, [initialData]);

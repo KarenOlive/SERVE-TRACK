@@ -47,12 +47,12 @@ export async function GET(request) {
     // Get application counts by status
     const [counts] = await db.execute(
       `SELECT 
-        status,
-        COUNT(*) as count
-       FROM applications a
-       JOIN opportunities o ON a.opportunity_id = o.id
-       WHERE o.site_id = ?
-       GROUP BY status`,
+        a.status,
+        COUNT(*) AS count
+      FROM applications a
+      JOIN opportunities o ON a.opportunity_id = o.id
+      WHERE o.site_id = ?
+      GROUP BY a.status`,
       [user.id]
     );
 
@@ -69,6 +69,7 @@ export async function GET(request) {
         headers: { 'Content-Type': 'application/json' }
       }
     );
+
 
   } catch (error) {
     console.error('Get applications error:', error);
