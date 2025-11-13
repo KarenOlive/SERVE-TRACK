@@ -12,9 +12,12 @@ export async function GET(request) {
       );
     }
 
-    // Get organization profile
+    // Get organization profile with user's profile_complete status
     const [orgProfiles] = await db.execute(
-      `SELECT * FROM sites_profiles WHERE user_id = ?`,
+      `SELECT sp.*, u.profile_complete 
+       FROM sites_profiles sp 
+       JOIN users u ON sp.user_id = u.id 
+       WHERE sp.user_id = ?`,
       [user.id]
     );
 
@@ -135,7 +138,10 @@ export async function GET(request) {
           universityName: volunteer.university_name,
           hours: parseFloat(volunteer.total_hours || 0)
         })),
-        orgProfile
+        orgProfile,
+        userProfile: {
+          profile_complete: orgProfile.profile_complete
+        }
       }),
       { 
         status: 200,

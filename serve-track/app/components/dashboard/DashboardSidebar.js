@@ -2,6 +2,25 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { 
+  X, 
+  LogOut, 
+  Home, 
+  User, 
+  Search, 
+  FileText, 
+  Clock, 
+  BarChart3, 
+  TrendingUp, 
+  Building, 
+  Briefcase, 
+  Mail, 
+  CheckSquare, 
+  CheckCircle2,
+  GraduationCap, 
+  Users, 
+  Settings 
+} from 'lucide-react';
 
 const roleThemes = {
     student: {
@@ -26,37 +45,60 @@ const roleThemes = {
       light: 'bg-purple-50'
     }
   };
-
-// Navigation items for each role
-const navigation = {
-  student: [
-    { name: 'Dashboard', href: '/dashboard', icon: '🏠' },
-    { name: 'My Profile', href: '/dashboard/student/profile', icon: '👤' },
-    { name: 'Browse Opportunities', href: '/opportunities', icon: '🔍' },
-    { name: 'My Applications', href: '/dashboard/student/applications', icon: '📝' },
-    { name: 'Log Hours', href: '/dashboard/student/hours/log', icon: '⏱️' },
-    { name: 'Hour History', href: '/dashboard/student/hours', icon: '📊' },
-    { name: 'Progress Reports', href: '/dashboard/student/reports', icon: '📈' },
-  ],
-  nonprofit: [
-    { name: 'Dashboard', href: '/dashboard', icon: '🏠' },
-    { name: 'Organization Profile', href: '/dashboard/site/profile', icon: '🏢' },
-    { name: 'Manage Opportunities', href: '/dashboard/site/opportunities', icon: '💼' },
-    { name: 'Applications', href: '/dashboard/site/applications', icon: '📨' },
-    { name: 'Hour Verification', href: '/dashboard/site/verifications', icon: '✅' },
-    { name: 'Impact Reports', href: '/dashboard/site/reports', icon: '📈' },
-  ],
-  admin: [
-    { name: 'Dashboard', href: '/dashboard', icon: '🏠' },
-    { name: 'Admin Profile', href: '/dashboard/admin/profile', icon: '👤' },
-    { name: 'University Management', href: '/dashboard/admin/universities', icon: '🎓' },
-    { name: 'User Management', href: '/dashboard/admin/users', icon: '👥' },
-    { name: 'Analytics', href: '/dashboard/admin/analytics', icon: '📊' },
-    { name: 'System Reports', href: '/dashboard/admin/reports', icon: '📈' },
-    { name: 'System Settings', href: '/dashboard/admin/settings', icon: '⚙️' },
-  ]
+  
+const [notificationCount, setNotificationCount] = useState(0);
+  // Fetch notification count
+const fetchNotificationCount = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/admin/notifications', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      setNotificationCount(data.notifications?.length || 0);
+    }
+  } catch (err) {
+    console.error('Failed to fetch notification count:', err);
+  }
 };
 
+useEffect(() => {
+  fetchNotificationCount();
+}, []);
+
+// Navigation items for each role with Lucide icons
+const navigation = {
+  student: [
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'My Profile', href: '/dashboard/student/profile', icon: User },
+    { name: 'Browse Opportunities', href: '/opportunities', icon: Search },
+    { name: 'My Applications', href: '/dashboard/student/applications', icon: FileText },
+    { name: 'Log Hours', href: '/dashboard/student/hours/log', icon: Clock },
+    { name: 'Hour History', href: '/dashboard/student/hours', icon: BarChart3 },
+    { name: 'Progress Reports', href: '/dashboard/student/reports', icon: TrendingUp },
+  ],
+  nonprofit: [
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Organization Profile', href: '/dashboard/site/profile', icon: Building },
+    { name: 'Manage Opportunities', href: '/dashboard/site/opportunities', icon: Briefcase },
+    { name: 'Student Applications', href: '/dashboard/site/applications', icon: Mail },
+    { name: 'Hour Verification', href: '/dashboard/site/verifications', icon: CheckSquare },
+    { name: 'Impact Reports', href: '/dashboard/site/reports', icon: BarChart3 },
+  ],
+  admin: [
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Admin Profile', href: '/dashboard/admin/profile', icon: User },
+    { name: 'Verification Requests', href: '/dashboard/admin/verifications', icon: CheckCircle2, badge: notificationCount > 0 ? notificationCount : null},
+    
+    { name: 'University Management', href: '/dashboard/admin/universities', icon: GraduationCap },
+    { name: 'User Management', href: '/dashboard/admin/users', icon: Users },
+    { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
+    { name: 'System Reports', href: '/dashboard/admin/reports', icon: TrendingUp },
+    { name: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
+  ]
+};
 
 export default function DashboardSidebar({ user, onLogout, mobile = false, onClose }) {
   const pathname = usePathname();
@@ -68,15 +110,15 @@ export default function DashboardSidebar({ user, onLogout, mobile = false, onClo
       {/* Logo and Brand */}
       <div className={`flex items-center justify-between h-16 px-4 ${theme.bg} text-white`}>
         <div className="flex items-center space-x-2">
-          <span className="text-xl"></span>
           <h1 className="text-lg font-bold">ServeTrack</h1>
         </div>
         {mobile && (
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-black hover:bg-opacity-20"
+            className="p-2 rounded-md hover:bg-black hover:bg-opacity-20 transition-colors"
           >
-            <span className="text-white"></span>
+            <X className="w-6 h-6 text-white" />
+            <span className="sr-only">Close sidebar</span>
           </button>
         )}
       </div>
@@ -102,6 +144,8 @@ export default function DashboardSidebar({ user, onLogout, mobile = false, onClo
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
+          const IconComponent = item.icon;
+          
           return (
             <Link
               key={item.name}
@@ -113,7 +157,7 @@ export default function DashboardSidebar({ user, onLogout, mobile = false, onClo
               }`}
               onClick={mobile ? onClose : undefined}
             >
-              <span className="mr-3 text-lg">{item.icon}</span>
+              <IconComponent className="w-5 h-5 mr-3" />
               {item.name}
             </Link>
           );
@@ -126,7 +170,7 @@ export default function DashboardSidebar({ user, onLogout, mobile = false, onClo
           onClick={onLogout}
           className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
         >
-          <span className="mr-3">🚪</span>
+          <LogOut className="w-5 h-5 mr-3" />
           Sign Out
         </button>
       </div>

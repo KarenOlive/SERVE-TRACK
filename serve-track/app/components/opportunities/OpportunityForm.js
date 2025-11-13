@@ -1,92 +1,93 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import LocalDatePicker from '../ui/LocalDatePicker';
+
+//  Validation schema using Zod
+const OpportunitySchema = z
+  .object({
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().min(1, 'Description is required'),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    estimatedHours: z
+      .string()
+      .optional()
+      .transform((v) => (v ? Number(v) : '')),
+    volunteersNeeded: z
+      .string()
+      .min(1)
+      .transform((v) => Number(v))
+      .refine((v) => v > 0, { message: 'Must be at least 1' }),
+  })
+  .refine(
+    (data) =>
+      !data.startDate ||
+      !data.endDate ||
+      new Date(data.startDate) <= new Date(data.endDate),
+    {
+      message: 'End date must be after start date',
+      path: ['endDate'],
+    }
+  );
 
 export default function OpportunityForm({ onSubmit, onCancel, initialData = {}, loading = false }) {
-  const [formData, setFormData] = useState({
-    title: initialData.title || '',
-    description: initialData.description || '',
-    startDate: initialData.startDate || '',
-    endDate: initialData.endDate || '',
-    estimatedHours: initialData.estimatedHours || '',
-    volunteersNeeded: initialData.volunteersNeeded || 1,
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset,
+  } = useForm({
+    resolver: zodResolver(OpportunitySchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      estimatedHours: '',
+      volunteersNeeded: 1,
+    },
   });
-  
 
-  const [errors, setErrors] = useState({});
-
-   // Sync formData whenever initialData changes (important for Edit mode)
-   useEffect(() => {
+  // 🔄 When editing, populate form
+  useEffect(() => {
     if (initialData) {
-      const formatLocalDate = (dateValue) => {
-        if (!dateValue) return '';
-        // If it's already in YYYY-MM-DD format, return as-is
-        if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-          return dateValue;
-        }
-      
-        const d = new Date(dateValue);
-        if (isNaN(d.getTime())) return '';
-      
-        // Construct local date manually
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
+      const safeDate = (d) => {
+        if (!d) return '';
+        if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       };
-      
-      
-      setFormData({
+
+      reset({
         title: initialData.title || '',
         description: initialData.description || '',
-        startDate: formatLocalDate(initialData.startDate || initialData.start_date),
-        endDate: formatLocalDate(initialData.endDate || initialData.end_date),
+        startDate: safeDate(initialData.startDate || initialData.start_date),
+        endDate: safeDate(initialData.endDate || initialData.end_date),
         estimatedHours: initialData.estimatedHours || initialData.estimated_hours || '',
         volunteersNeeded: initialData.volunteersNeeded || initialData.volunteers_needed || 1,
       });
-      
-      
     }
-  }, [initialData]);
+  }, [initialData, reset]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
+  const startDate = watch('startDate');
+  const endDate = watch('endDate');
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    
-    if (formData.startDate && formData.endDate && new Date(formData.startDate) > new Date(formData.endDate)) {
-      newErrors.endDate = 'End date must be after start date';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      onSubmit(formData);
-    }
+  const onFormSubmit = (data) => {
+    onSubmit(data);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       {/* Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -94,84 +95,61 @@ export default function OpportunityForm({ onSubmit, onCancel, initialData = {}, 
         </label>
         <input
           type="text"
-          name="title"
-          required
-          value={formData.title}
-          onChange={handleChange}
+          {...register('title')}
           className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
             errors.title ? 'border-red-300' : 'border-gray-300'
           }`}
           placeholder="e.g., Community Garden Volunteer"
         />
-        {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
+        {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description *
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
         <textarea
-          name="description"
-          required
           rows={4}
-          value={formData.description}
-          onChange={handleChange}
+          {...register('description')}
           className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
             errors.description ? 'border-red-300' : 'border-gray-300'
           }`}
           placeholder="Describe the volunteer opportunity, tasks, and impact..."
         />
-        {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+        {errors.description && (
+          <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+        )}
       </div>
 
       {/* Date Range */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Start Date
-          </label>
-          <input
-            type="date"
-            name="startDate"
-            value={formData.startDate}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            End Date
-          </label>
-          <input
-            type="date"
-            name="endDate"
-            value={formData.endDate}
-            onChange={handleChange}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.endDate ? 'border-red-300' : 'border-gray-300'
-            }`}
-          />
-          {errors.endDate && <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>}
-        </div>
+        <LocalDatePicker
+          label="Start Date"
+          value={startDate}
+          onChange={(val) => setValue('startDate', val)}
+          error={errors.startDate?.message}
+        />
+        <LocalDatePicker
+          label="End Date"
+          value={endDate}
+          onChange={(val) => setValue('endDate', val)}
+          error={errors.endDate?.message}
+        />
       </div>
 
       {/* Hours and Volunteers */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Estimated Hours
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Hours</label>
           <input
             type="number"
-            name="estimatedHours"
             min="1"
-            value={formData.estimatedHours}
-            onChange={handleChange}
+            {...register('estimatedHours')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="e.g., 10"
           />
+          {errors.estimatedHours && (
+            <p className="text-sm text-red-600 mt-1">{errors.estimatedHours.message}</p>
+          )}
         </div>
 
         <div>
@@ -180,12 +158,13 @@ export default function OpportunityForm({ onSubmit, onCancel, initialData = {}, 
           </label>
           <input
             type="number"
-            name="volunteersNeeded"
             min="1"
-            value={formData.volunteersNeeded}
-            onChange={handleChange}
+            {...register('volunteersNeeded')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
+          {errors.volunteersNeeded && (
+            <p className="text-sm text-red-600 mt-1">{errors.volunteersNeeded.message}</p>
+          )}
         </div>
       </div>
 
@@ -204,7 +183,7 @@ export default function OpportunityForm({ onSubmit, onCancel, initialData = {}, 
           disabled={loading}
           className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors"
         >
-          {loading ? 'Saving...' : (initialData.id ? 'Update Opportunity' : 'Create Opportunity')}
+          {loading ? 'Saving...' : initialData.id ? 'Update Opportunity' : 'Create Opportunity'}
         </button>
       </div>
     </form>

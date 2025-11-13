@@ -16,7 +16,15 @@ export async function POST(request) {
     
     const { organization_description, website, address } = await request.json();
 
+    if (!organization_description || !website || !address) {
+      return NextResponse.json(
+        { error: 'Organization description, website, and address are required' },
+        { status: 400 }
+      );
+    }
+
     connection = await db.getConnection();
+    await connection.beginTransaction();
 
     try {
       // Update nonprofit profile with additional details
@@ -27,16 +35,25 @@ export async function POST(request) {
         [organization_description, website, address, decoded.userId]
       );
 
+      // Mark profile as complete in users table
+      await connection.execute(
+        `UPDATE users SET profile_complete = 1, updated_at = NOW() WHERE id = ?`,
+        [decoded.userId]
+      );
+
+      await connection.commit();
+
       return NextResponse.json({
-        message: 'Organization details updated successfully'
+        message: 'Organization full profile updated successfully and marked as complete'
       });
 
     } catch (error) {
+      await connection.rollback();
       throw error;
     }
 
   } catch (error) {
-    console.error('Organization details update error:', error);
+    console.error('Organization full profile update error:', error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

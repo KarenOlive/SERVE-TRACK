@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Menu, ChevronDown, User, LogOut } from 'lucide-react';
 
 const roleBadges = {
     student: {
@@ -32,11 +33,11 @@ export default function DashboardHeader({ user, onMenuClick, onLogout }) {
         <div className="flex items-center">
           <button
             type="button"
-            className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 lg:hidden"
+            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 lg:hidden"
             onClick={onMenuClick}
           >
             <span className="sr-only">Open sidebar</span>
-            <span className="text-lg">☰</span>
+            <Menu className="w-6 h-6" />
           </button>
           
           <div className="ml-2 lg:ml-0">
@@ -65,7 +66,7 @@ export default function DashboardHeader({ user, onMenuClick, onLogout }) {
               <span className="hidden md:block text-gray-700">
                 {user.firstName} {user.lastName}
               </span>
-              <span className="hidden md:block">▼</span>
+              <ChevronDown className="hidden md:block w-4 h-4" />
             </button>
 
             {/* User dropdown menu */}
@@ -75,20 +76,22 @@ export default function DashboardHeader({ user, onMenuClick, onLogout }) {
                   Signed in as {user.firstName} {user.lastName}
                 </div>
                 <Link
-                  href={`/dashboard/${user.userType}/profile`}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  href={`/dashboard/site/profile`}
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={() => setUserMenuOpen(false)}
                 >
-                  👤 Your Profile
+                  <User className="w-4 h-4 mr-2" />
+                  Your Profile
                 </Link>
                 <button
                   onClick={() => {
                     setUserMenuOpen(false);
                     onLogout();
                   }}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  🚪 Sign Out
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
                 </button>
               </div>
             )}

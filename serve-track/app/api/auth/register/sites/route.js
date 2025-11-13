@@ -88,7 +88,7 @@ export async function POST(request) {
       console.log(' Creating nonprofit profile...');
       
       await connection.execute(
-        `INSERT INTO nonprofit_profiles 
+        `INSERT INTO sites_profiles 
          (user_id, organization_name, organization_description, website, contact_phone, address, location) 
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [userId, organization_name, organization_description, website, contact_phone, address, location]

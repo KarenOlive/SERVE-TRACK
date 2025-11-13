@@ -28,7 +28,7 @@ export async function GET(request) {
     const [approvalStats] = await db.execute(
       `SELECT COUNT(*) as pending_approvals
        FROM sites_profiles
-       WHERE verified = 0`
+       WHERE verification_status = 'pending'`
     );
 
     // Get total system users

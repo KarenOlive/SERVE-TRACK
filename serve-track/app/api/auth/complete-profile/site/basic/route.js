@@ -34,18 +34,12 @@ export async function POST(request) {
          SET organization_name = ?, location = ?, contact_phone = ?
          WHERE user_id = ?`,
         [organization_name, location, contact_phone, decoded.userId]
-      );
-
-      // Mark user profile as complete (they have the minimum required info)
-      await connection.execute(
-        'UPDATE users SET profile_complete = TRUE WHERE id = ?',
-        [decoded.userId]
-      );
+      ); 
 
       await connection.commit();
 
       return NextResponse.json({
-        message: 'Organization profile updated successfully'
+        message: 'Basic organization profile updated successfully'
       });
 
     } catch (error) {
