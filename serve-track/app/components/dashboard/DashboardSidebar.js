@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -19,57 +20,36 @@ import {
   CheckCircle2,
   GraduationCap, 
   Users, 
-  Settings 
+  Settings,
+  Bell
 } from 'lucide-react';
 
 const roleThemes = {
-    student: {
-      bg: 'bg-blue-600',
-      text: 'text-blue-600',
-      border: 'border-blue-600',
-      hover: 'hover:bg-blue-100',
-      light: 'bg-blue-50'
-    },
-    nonprofit: {
-      bg: 'bg-green-600',
-      text: 'text-green-600', 
-      border: 'border-green-600',
-      hover: 'hover:bg-green-100',
-      light: 'bg-green-50'
-    },
-    admin: {
-      bg: 'bg-purple-600',
-      text: 'text-purple-600',
-      border: 'border-purple-600',
-      hover: 'hover:bg-purple-100',
-      light: 'bg-purple-50'
-    }
-  };
-  
-const [notificationCount, setNotificationCount] = useState(0);
-  // Fetch notification count
-const fetchNotificationCount = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/admin/notifications', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    
-    if (res.ok) {
-      const data = await res.json();
-      setNotificationCount(data.notifications?.length || 0);
-    }
-  } catch (err) {
-    console.error('Failed to fetch notification count:', err);
+  student: {
+    bg: 'bg-blue-600',
+    text: 'text-blue-600',
+    border: 'border-blue-600',
+    hover: 'hover:bg-blue-100',
+    light: 'bg-blue-50'
+  },
+  nonprofit: {
+    bg: 'bg-green-600',
+    text: 'text-green-600', 
+    border: 'border-green-600',
+    hover: 'hover:bg-green-100',
+    light: 'bg-green-50'
+  },
+  admin: {
+    bg: 'bg-purple-600',
+    text: 'text-purple-600',
+    border: 'border-purple-600',
+    hover: 'hover:bg-purple-100',
+    light: 'bg-purple-50'
   }
 };
 
-useEffect(() => {
-  fetchNotificationCount();
-}, []);
-
 // Navigation items for each role with Lucide icons
-const navigation = {
+const getNavigation = (notificationCount) => ({
   student: [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'My Profile', href: '/dashboard/student/profile', icon: User },
@@ -90,20 +70,49 @@ const navigation = {
   admin: [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Admin Profile', href: '/dashboard/admin/profile', icon: User },
-    { name: 'Verification Requests', href: '/dashboard/admin/verifications', icon: CheckCircle2, badge: notificationCount > 0 ? notificationCount : null},
-    
+    { 
+      name: 'Approval Requests', 
+      href: '/dashboard/admin/approval-requests', 
+      icon: CheckCircle2, 
+      badge: notificationCount > 0 ? notificationCount : null
+    },
     { name: 'University Management', href: '/dashboard/admin/universities', icon: GraduationCap },
     { name: 'User Management', href: '/dashboard/admin/users', icon: Users },
     { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
     { name: 'System Reports', href: '/dashboard/admin/reports', icon: TrendingUp },
     { name: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
   ]
-};
+});
 
 export default function DashboardSidebar({ user, onLogout, mobile = false, onClose }) {
   const pathname = usePathname();
   const theme = roleThemes[user.userType];
-  const navItems = navigation[user.userType] || [];
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  // Fetch notification count only for admin users
+  const fetchNotificationCount = async () => {
+    if (user.userType !== 'admin') return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/admin/notifications', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setNotificationCount(data.notifications?.length || 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch notification count:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotificationCount();
+  }, [user.userType]);
+
+  const navItems = getNavigation(notificationCount)[user.userType] || [];
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
@@ -150,15 +159,24 @@ export default function DashboardSidebar({ user, onLogout, mobile = false, onClo
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+              className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                 isActive
                   ? `${theme.bg} text-white`
                   : `text-gray-700 hover:bg-gray-100 ${theme.hover}`
               }`}
               onClick={mobile ? onClose : undefined}
             >
-              <IconComponent className="w-5 h-5 mr-3" />
-              {item.name}
+              <div className="flex items-center">
+                <IconComponent className="w-5 h-5 mr-3" />
+                {item.name}
+              </div>
+              {item.badge && item.badge > 0 && (
+                <span className={`inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none rounded-full ${
+                  isActive ? 'bg-white text-purple-600' : 'bg-purple-100 text-purple-600'
+                }`}>
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}

@@ -1,5 +1,7 @@
-import db from '../../../../lib/database';
-import { getCurrentUser } from '../../../../lib/auth';
+// app/api/admin/notifications/[id]/route.js
+import db from '../../../../../lib/database';
+import { getCurrentUser } from '../../../../../lib/auth';
+import updateSiteVerification from '@/lib/updateSiteVerification';
 
 export async function PUT(request, { params }) {
   try {
@@ -8,40 +10,25 @@ export async function PUT(request, { params }) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    const { id } = params;
-    const { action, entityId } = await request.json(); // 'approve' or 'reject'
+    const { id } = params; // notification id
+    const { action, profile_id, rejection_reason } = await request.json();
 
-    // Mark notification as read
-    await db.execute(
-      'UPDATE admin_notifications SET is_read = 1 WHERE id = ?',
-      [id]
-    );
-
-    if (action === 'approve') {
-      // Update site verification status
-      await db.execute(
-        'UPDATE sites SET verification_status = "verified" WHERE id = ?',
-        [entityId]
-      );
-      
-      return new Response(
-        JSON.stringify({ message: 'Organization verified successfully' }),
-        { status: 200 }
-      );
-    } else if (action === 'reject') {
-      // Update site verification status
-      await db.execute(
-        'UPDATE sites SET verification_status = "rejected" WHERE id = ?',
-        [entityId]
-      );
-      
-      return new Response(
-        JSON.stringify({ message: 'Organization verification rejected' }),
-        { status: 200 }
-      );
+    if (!id || !action || !['approve', 'reject', 'pending'].includes(action)) {
+      return new Response(JSON.stringify({ error: 'Invalid parameters' }), { status: 400 });
     }
 
-    return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400 });
+    // mark notification as read
+    await db.execute('UPDATE admin_notifications SET is_read = 1 WHERE id = ?', [id]);
+
+    // update verification using centralized helper
+    const status = await updateSiteVerification({
+      profileIdentifier: profile_id,
+      by: 'profile',
+      action,
+      rejectionReason: rejection_reason || null
+    });
+
+    return new Response(JSON.stringify({ message: `Verification ${status}` }), { status: 200 });
   } catch (error) {
     console.error('Error processing notification:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });

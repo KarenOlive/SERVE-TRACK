@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/app/hooks/useToast';
-import { CheckCircle, XCircle, Clock, Building } from 'lucide-react';
+import { CheckCircle, XCircle, Building, Loader2 } from 'lucide-react';
+import AdminRejectModal from '../admin/AdminRejectModal';
 
 export default function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [rejectModal, setRejectModal] = useState({ open: false, notification: null });
   const { addToast, ToastContainer } = useToast();
 
   const fetchNotifications = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('token');
       const res = await fetch('/api/admin/notifications', {
         headers: { Authorization: `Bearer ${token}` },
@@ -27,42 +30,77 @@ export default function AdminNotifications() {
     }
   };
 
-  const handleVerification = async (notificationId, entityId, action) => {
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const handleApprove = async (notification) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/admin/notifications/${notificationId}`, {
+      const res = await fetch(`/api/admin/notifications/${notification.id}`, {
         method: 'PUT',
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ action, entityId }),
+        body: JSON.stringify({
+          action: 'approve',
+          profile_id: notification.profile_id || null,
+          entityId: notification.entity_id || null
+        }),
       });
 
-      if (!res.ok) throw new Error('Failed to process verification');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to approve');
 
-      addToast(
-        action === 'approve' 
-          ? 'Organization verified successfully' 
-          : 'Verification rejected',
-        'success'
-      );
-      
-      // Remove from local state
-      setNotifications(notifications.filter(n => n.id !== notificationId));
+      addToast('Organization verified successfully', 'success');
+      setNotifications(prev => prev.filter(n => n.id !== notification.id));
     } catch (err) {
-      addToast(err.message, 'error');
+      addToast(err.message || 'Action failed', 'error');
     }
   };
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
+  const openReject = (notification) => {
+    setRejectModal({ open: true, notification });
+  };
+
+  const handleRejectConfirm = async ({ rejection_reason }) => {
+    const notification = rejectModal.notification;
+    if (!notification) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/admin/notifications/${notification.id}`, {
+        method: 'PUT',
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'reject',
+          // pass both - backend can use whichever it expects
+          profile_id: notification.profile_id || null,
+          entityId: notification.entity_id || null,
+          rejection_reason
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to reject');
+
+      addToast('Verification rejected', 'success');
+      setNotifications(prev => prev.filter(n => n.id !== notification.id));
+    } catch (err) {
+      addToast(err.message || 'Action failed', 'error');
+    } finally {
+      setRejectModal({ open: false, notification: null });
+    }
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center text-gray-500">Loading verification requests...</div>
+        <Loader2 className="w-8 h-8 text-gray-500 animate-spin" />
+        <p className="ml-2 text-gray-600">Loading verification requests...</p>
       </div>
     );
   }
@@ -87,11 +125,11 @@ export default function AdminNotifications() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg text-gray-900">
-                      {notification.organization_name}
+                      {notification.organization_name || notification.message}
                     </h3>
                     <p className="text-gray-600 mt-1">{notification.message}</p>
                     <div className="mt-3 space-y-1 text-sm text-gray-500">
-                      <p><strong>Email:</strong> {notification.contact_email}</p>
+                      <p><strong>Email:</strong> {notification.contact_email || 'Not provided'}</p>
                       <p><strong>Website:</strong> {notification.website || 'Not provided'}</p>
                       <p><strong>Address:</strong> {notification.address || 'Not provided'}</p>
                       {notification.description && (
@@ -106,14 +144,14 @@ export default function AdminNotifications() {
                 
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleVerification(notification.id, notification.entity_id, 'approve')}
+                    onClick={() => handleApprove(notification)}
                     className="flex items-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Approve
                   </button>
                   <button
-                    onClick={() => handleVerification(notification.id, notification.entity_id, 'reject')}
+                    onClick={() => openReject(notification)}
                     className="flex items-center bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                   >
                     <XCircle className="w-4 h-4 mr-2" />
@@ -126,6 +164,13 @@ export default function AdminNotifications() {
         </div>
       )}
       
+      <AdminRejectModal
+        isOpen={rejectModal.open}
+        defaultReason={rejectModal.notification?.rejection_reason || ''}
+        onClose={() => setRejectModal({ open: false, notification: null })}
+        onConfirm={handleRejectConfirm}
+      />
+
       <ToastContainer />
     </div>
   );

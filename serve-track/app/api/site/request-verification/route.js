@@ -13,7 +13,6 @@ export async function POST(request) {
       'SELECT profile_complete FROM users WHERE id = ?',
       [user.id]
     );
-
     const userData = userRows[0];
     if (!userData || userData.profile_complete !== 1) {
       return new Response(
@@ -24,7 +23,7 @@ export async function POST(request) {
 
     // Get organization profile info
     const [rows] = await db.execute(
-      `SELECT organization_name, contact_phone, organization_description, address, location, verification_status 
+      `SELECT user_id, organization_name, contact_phone, organization_description, address, location, verification_status 
        FROM sites_profiles WHERE user_id = ?`,
       [user.id]
     );
@@ -48,15 +47,17 @@ export async function POST(request) {
       );
     }
 
+    // Set profile verification status to pending
     await db.execute(
       `UPDATE sites_profiles SET verification_status = 'pending', updated_at = NOW() WHERE user_id = ?`,
-      [user.id]
+      [profile.user_id]
     );
 
+    // Insert admin notification (store profile.user_id as entity_id)
     await db.execute(
       `INSERT INTO admin_notifications (type, message, entity_id, created_at)
        VALUES ('verification_request', ?, ?, NOW())`,
-      [`${profile.organization_name} requested verification`, user.id]
+      [`${profile.organization_name} requested verification`, profile.user_id]
     );
 
     return new Response(

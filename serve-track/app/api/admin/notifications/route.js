@@ -1,3 +1,4 @@
+// app/api/admin/notifications/route.js
 import db from '../../../../lib/database';
 import { getCurrentUser } from '../../../../lib/auth';
 
@@ -9,9 +10,9 @@ export async function GET(request) {
     }
 
     const [notifications] = await db.execute(`
-      SELECT an.*, s.organization_name, s.contact_email, s.description, s.address, s.website
+      SELECT an.*, sp.user_id as profile_id, sp.organization_name, sp.contact_phone, sp.organization_description, sp.address, sp.website
       FROM admin_notifications an
-      LEFT JOIN sites s ON an.entity_id = s.id
+      LEFT JOIN sites_profiles sp ON an.entity_id = sp.user_id
       WHERE an.is_read = 0
       ORDER BY an.created_at DESC
     `);

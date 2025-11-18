@@ -19,7 +19,8 @@ export async function GET(request) {
              sp.contact_phone,
              sp.address,
              u.profile_complete,
-             sp.verification_status
+             sp.verification_status,
+             sp.rejection_reason
            FROM sites_profiles sp
            JOIN users u ON sp.user_id = u.id
            WHERE sp.user_id = ?`,

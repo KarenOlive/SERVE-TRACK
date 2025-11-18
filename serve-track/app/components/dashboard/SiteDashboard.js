@@ -33,6 +33,8 @@ export default function SiteDashboard({ user }) {
   const { addToast, ToastContainer } = useToast();
   const [refreshing, setRefreshing] = useState(false);
   const [showIncompleteBanner, setShowIncompleteBanner] = useState(true);
+  const [showVerifiedBanner, setShowVerifiedBanner] = useState(true);
+  const [showRejectedBanner, setShowRejectedBanner] = useState(true);
 
   const fetchNonprofitData = async () => {
     try {
@@ -59,17 +61,14 @@ export default function SiteDashboard({ user }) {
     }
   };
 
-  
-
   useEffect(() => {
     fetchNonprofitData();
-    console.log('User object:', user);
-    console.log('User profile:', user.profile);
   }, [user]);
+
+  const handleDismissVerified = () => setShowVerifiedBanner(false);
 
   // --- Banners ---
   const renderVerificationBanner = () => {
-    // Use both user profile completion and organization verification status
     const profileComplete = userProfile?.profile_complete;
     const verificationStatus = orgProfile?.verification_status;
 
@@ -92,49 +91,68 @@ export default function SiteDashboard({ user }) {
       );
     }
 
-    if (profileComplete && verificationStatus === 'unverified') {
+    if (profileComplete && verificationStatus === 'pending') {
       return (
-        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg text-yellow-800 flex justify-between items-start">
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-blue-800 flex justify-between items-start">
           <div className="flex items-start space-x-2">
-            <AlertTriangle className="w-5 h-5 mt-0.5 text-yellow-700" />
+            <Hourglass className="w-5 h-5 mt-0.5 text-blue-700" />
             <div>
-              <p className="font-medium">Not verified.</p>
+              <p className="font-medium">Verification Pending</p>
               <p className="text-sm">
-                Request verification and unlock posting privileges.
+                Your verification request is currently under review.
               </p>
             </div>
           </div>
-          <button onClick={() => setShowIncompleteBanner(false)}>
-            <X className="w-4 h-4 text-yellow-700 hover:text-yellow-900" />
+        </div>
+      );
+    }
+
+    if (verificationStatus === 'verified' && showVerifiedBanner) {
+      return (
+        <div className="bg-green-50 border border-green-200 p-4 rounded-lg text-green-800 flex justify-between items-start">
+          <div className="flex items-start space-x-2">
+            <CheckCircle className="w-5 h-5 mt-0.5 text-green-700" />
+            <div>
+              <p className="font-medium">Organization Verified</p>
+              <p className="text-sm">
+                You can now post opportunities and manage volunteers.
+              </p>
+            </div>
+          </div>
+          <button onClick={handleDismissVerified}>
+            <X className="w-4 h-4 text-green-700 hover:text-green-900" />
           </button>
         </div>
       );
     }
 
-    if (profileComplete && verificationStatus === 'pending') {
+    if (verificationStatus === 'rejected' && showRejectedBanner) {
       return (
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-blue-800 flex items-start space-x-2">
-          <Hourglass className="w-5 h-5 mt-0.5 text-blue-700" />
-          <div>
-            <p className="font-medium">Verification Pending</p>
-            <p className="text-sm">
-              Your verification request is currently under review.
-            </p>
+        <div className="bg-red-50 border border-red-200 p-4 rounded-lg text-red-800 flex justify-between items-start">
+          <div className="flex items-start space-x-2">
+            <AlertTriangle className="w-5 h-5 mt-0.5 text-red-700" />
+            <div>
+              <p className="font-medium">Verification Rejected</p>
+              <p className="text-sm">
+                Your organization’s verification was not approved. Please review your profile information, make corrections, and resubmit a verification request.
+              </p>
+              {orgProfile?.rejection_reason && (
+                <div className="mt-2 p-2 bg-red-100 text-red-800 rounded">
+                  <strong className="text-sm">Reason:</strong>
+                  <p className="text-sm mt-1 whitespace-pre-line">{orgProfile.rejection_reason}</p>
+                </div>
+              )}
+              <Link 
+                href="/dashboard/site/profile" 
+                className="text-sm font-medium text-red-700 underline hover:text-red-900 mt-1 inline-block"
+              >
+                Go to Profile
+              </Link>
+            </div>
           </div>
-        </div>
-      );
-    }
-
-    if (verificationStatus === 'verified') {
-      return (
-        <div className="bg-green-50 border border-green-200 p-4 rounded-lg text-green-800 flex items-start space-x-2">
-          <CheckCircle className="w-5 h-5 mt-0.5 text-green-700" />
-          <div>
-            <p className="font-medium">Organization Verified</p>
-            <p className="text-sm">
-              You can now post opportunities and manage volunteers.
-            </p>
-          </div>
+          <button onClick={() => setShowRejectedBanner(false)}>
+            <X className="w-4 h-4 text-red-700 hover:text-red-900" />
+          </button>
         </div>
       );
     }

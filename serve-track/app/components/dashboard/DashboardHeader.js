@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, ChevronDown, User, LogOut } from 'lucide-react';
+import { getUserDashboardPath } from '@/lib/userUtils';
 
 const roleBadges = {
     student: {
@@ -76,7 +77,7 @@ export default function DashboardHeader({ user, onMenuClick, onLogout }) {
                   Signed in as {user.firstName} {user.lastName}
                 </div>
                 <Link
-                  href={`/dashboard/site/profile`}
+                  href={`/dashboard/${getUserDashboardPath(user.userType)}/profile`}
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={() => setUserMenuOpen(false)}
                 >

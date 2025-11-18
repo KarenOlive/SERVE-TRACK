@@ -151,6 +151,24 @@ export default function SiteProfilePage() {
         </div>
       )}
 
+      {profile?.verification_status === 'rejected' && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+          <AlertTriangle className="w-5 h-5 text-red-600 mr-3 mt-0.5" />
+          <div>
+            <p className="font-medium text-red-800">Verification Rejected</p>
+            <p className="text-sm text-red-700 mt-1">
+              Your organization’s verification was not approved. Please review your profile information, make corrections, and resubmit a verification request.
+            </p>
+            {profile.rejection_reason && (
+              <div className="mt-3 p-3 bg-red-100 text-red-800 rounded">
+                <strong className="text-sm">Reason:</strong>
+                <p className="text-sm mt-1 whitespace-pre-line">{profile.rejection_reason}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {!showForm ? (
         <>
           {/* Profile Display */}
@@ -209,7 +227,7 @@ export default function SiteProfilePage() {
               {profile?.profile_complete ? 'Update Profile' : 'Complete Profile'}
             </button>
 
-            {profile?.verification_status === 'unverified' && profile?.profile_complete && (
+            {(profile?.verification_status === 'unverified' || profile?.verification_status === 'rejected') && profile?.profile_complete && (
               <button
                 onClick={handleRequestVerification}
                 disabled={requestingVerification}
