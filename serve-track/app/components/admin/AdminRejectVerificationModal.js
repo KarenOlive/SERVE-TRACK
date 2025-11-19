@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function AdminRejectModal({ isOpen, onClose, onConfirm, defaultReason = '' }) {
+export default function AdminRejectVerificationModal({ isOpen, onClose, onConfirm, defaultReason = '' }) {
   const [reason, setReason] = useState(defaultReason);
   const [loading, setLoading] = useState(false);
 

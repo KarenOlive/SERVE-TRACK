@@ -51,6 +51,7 @@ export default function DashboardPage() {
       case 'nonprofit':
         return <SiteDashboard user={user} />;
       case 'admin':
+        case 'university_admin': //to handle university_admin
         return <AdminDashboard user={user} />;
       default:
         return (

@@ -82,13 +82,29 @@ export async function POST(request) {
         [user.id]
       );
       profileData = siteProfiles[0];
+    } else if (userType === 'university_admin') {
+      // NEW: Get university admin details including permissions
+      const [universityAdminDetails] = await db.execute(
+        `SELECT 
+          ua.university_id,
+          ua.can_manage_nonprofits,
+          ua.can_manage_students, 
+          ua.can_manage_admins,
+          univ.name as university_name,
+          univ.code as university_code
+         FROM university_admins ua
+         JOIN universities univ ON ua.university_id = univ.id
+         WHERE ua.user_id = ?`,
+        [user.id]
+      );
+      profileData = universityAdminDetails[0];
     }
     // Add admin profile check if needed
 
     // STEP 5: Create JWT token
     const token = jwt.sign(
       { 
-        id: user.id,
+        userId: user.id,
         email: user.email,
         userType: userType,
         firstName: user.first_name,
@@ -110,7 +126,8 @@ export async function POST(request) {
           userType: userType,
           firstName: user.first_name,
           lastName: user.last_name,
-          profile: profileData
+          profile: profileData,
+          profile_complete: user.profile_complete
         }
       }),
       { 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/app/hooks/useToast';
 import { CheckCircle, XCircle, Building, Loader2 } from 'lucide-react';
-import AdminRejectModal from '../admin/AdminRejectModal';
+import AdminRejectModal from '../admin/AdminRejectVerificationModal';
 
 export default function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);

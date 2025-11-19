@@ -5,7 +5,7 @@ import { getCurrentUser } from '../../../../lib/auth';
 export async function GET(request) {
   try {
     const user = getCurrentUser(request);
-    if (!user || user.userType !== 'admin') {
+    if (!user || user.userType !== 'admin' && user.userType !== 'university_admin') {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 

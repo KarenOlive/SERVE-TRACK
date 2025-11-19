@@ -4,25 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  X, 
-  LogOut, 
-  Home, 
-  User, 
-  Search, 
-  FileText, 
-  Clock, 
-  BarChart3, 
-  TrendingUp, 
-  Building, 
-  Briefcase, 
-  Mail, 
-  CheckSquare, 
-  CheckCircle2,
-  GraduationCap, 
-  Users, 
-  Settings,
-  Bell
+  X, LogOut, Home, User, Search, FileText, Clock, BarChart3, TrendingUp, Building, Briefcase, Mail, CheckSquare, CheckCircle2, GraduationCap, Users, Settings,Bell
 } from 'lucide-react';
+
+import { getUserDashboardPath } from '@/lib/userUtils'; 
 
 const roleThemes = {
   student: {
@@ -45,74 +30,103 @@ const roleThemes = {
     border: 'border-purple-600',
     hover: 'hover:bg-purple-100',
     light: 'bg-purple-50'
+  },
+  university_admin: {
+    bg: 'bg-indigo-600',
+    text: 'text-indigo-600',
+    border: 'border-indigo-600',
+    hover: 'hover:bg-indigo-100',
+    light: 'bg-indigo-50'
   }
 };
 
 // Navigation items for each role with Lucide icons
-const getNavigation = (notificationCount) => ({
-  student: [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'My Profile', href: '/dashboard/student/profile', icon: User },
-    { name: 'Browse Opportunities', href: '/opportunities', icon: Search },
-    { name: 'My Applications', href: '/dashboard/student/applications', icon: FileText },
-    { name: 'Log Hours', href: '/dashboard/student/hours/log', icon: Clock },
-    { name: 'Hour History', href: '/dashboard/student/hours', icon: BarChart3 },
-    { name: 'Progress Reports', href: '/dashboard/student/reports', icon: TrendingUp },
-  ],
-  nonprofit: [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Organization Profile', href: '/dashboard/site/profile', icon: Building },
-    { name: 'Manage Opportunities', href: '/dashboard/site/opportunities', icon: Briefcase },
-    { name: 'Student Applications', href: '/dashboard/site/applications', icon: Mail },
-    { name: 'Hour Verification', href: '/dashboard/site/verifications', icon: CheckSquare },
-    { name: 'Impact Reports', href: '/dashboard/site/reports', icon: BarChart3 },
-  ],
-  admin: [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Admin Profile', href: '/dashboard/admin/profile', icon: User },
-    { 
-      name: 'Approval Requests', 
-      href: '/dashboard/admin/approval-requests', 
-      icon: CheckCircle2, 
-      badge: notificationCount > 0 ? notificationCount : null
-    },
-    { name: 'University Management', href: '/dashboard/admin/universities', icon: GraduationCap },
-    { name: 'User Management', href: '/dashboard/admin/users', icon: Users },
-    { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
-    { name: 'System Reports', href: '/dashboard/admin/reports', icon: TrendingUp },
-    { name: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
-  ]
-});
+const getNavigation = (userType, pendingVerificationCount) => {
+  const basePath = getUserDashboardPath(userType);
+  
+  const navigation = {
+    student: [
+      { name: 'Dashboard', href: '/dashboard', icon: Home },
+      { name: 'My Profile', href: `/dashboard/${basePath}/profile`, icon: User },
+      { name: 'Browse Opportunities', href: '/opportunities', icon: Search },
+      { name: 'My Applications', href: `/dashboard/${basePath}/applications`, icon: FileText },
+      { name: 'Log Hours', href: `/dashboard/${basePath}/hours/log`, icon: Clock },
+      { name: 'Hour History', href: `/dashboard/${basePath}/hours`, icon: BarChart3 },
+      { name: 'Progress Reports', href: `/dashboard/${basePath}/reports`, icon: TrendingUp },
+    ],
+    nonprofit: [
+      { name: 'Dashboard', href: '/dashboard', icon: Home },
+      { name: 'Organization Profile', href: `/dashboard/${basePath}/profile`, icon: Building },
+      { name: 'Manage Opportunities', href: `/dashboard/${basePath}/opportunities`, icon: Briefcase },
+      { name: 'Student Applications', href: `/dashboard/${basePath}/applications`, icon: Mail },
+      { name: 'Hour Verification', href: `/dashboard/${basePath}/verifications`, icon: CheckSquare },
+      { name: 'Impact Reports', href: `/dashboard/${basePath}/reports`, icon: BarChart3 },
+    ],
+    admin: [
+      { name: 'Dashboard', href: '/dashboard', icon: Home },
+      { name: 'Admin Profile', href: `/dashboard/${basePath}/profile`, icon: User },
+      { 
+        name: 'Approval Requests', 
+        href: `/dashboard/${basePath}/approval-requests`, 
+        icon: CheckCircle2, 
+        badge: pendingVerificationCount > 0 ? pendingVerificationCount : null
+      },
+      { name: 'University Management', href: `/dashboard/${basePath}/universities`, icon: GraduationCap },
+      { name: 'User Management', href: `/dashboard/${basePath}/users`, icon: Users },
+      { name: 'Analytics', href: `/dashboard/${basePath}/analytics`, icon: BarChart3 },
+      { name: 'System Reports', href: `/dashboard/${basePath}/reports`, icon: TrendingUp },
+      { name: 'System Settings', href: `/dashboard/${basePath}/settings`, icon: Settings },
+    ],
+    university_admin: [
+      { name: 'Dashboard', href: '/dashboard', icon: Home },
+      { name: 'Admin Profile', href: `/dashboard/admin/profile`, icon: User },
+      { name: 'University Management', href: `/dashboard/admin/universities`, icon: GraduationCap },
+      { 
+        name: 'Approval Requests', 
+        href: `/dashboard/admin/approval-requests`, 
+        icon: CheckCircle2, 
+        badge: pendingVerificationCount > 0 ? pendingVerificationCount : null
+      },
+      { name: 'User Management', href: `/dashboard/admin/users`, icon: Users },
+      { name: 'Analytics', href: `/dashboard/admin/analytics`, icon: BarChart3 },
+      { name: 'Reports', href: `/dashboard/admin/reports`, icon: TrendingUp },
+    ]
+  };
+  
+  return navigation[userType] || [];
+};
 
 export default function DashboardSidebar({ user, onLogout, mobile = false, onClose }) {
   const pathname = usePathname();
   const theme = roleThemes[user.userType];
-  const [notificationCount, setNotificationCount] = useState(0);
+  const [pendingVerificationCount, setPendingVerificationCount] = useState(0);
 
-  // Fetch notification count only for admin users
-  const fetchNotificationCount = async () => {
-    if (user.userType !== 'admin') return;
+   // Fetch pending verification count for admin users
+   const fetchPendingVerificationCount = async () => {
+    if (user.userType !== 'admin' && user.userType !== 'university_admin') return;
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/admin/notifications', {
+      const res = await fetch('/api/admin/approval-requests', {
         headers: { Authorization: `Bearer ${token}` },
       });
       
       if (res.ok) {
         const data = await res.json();
-        setNotificationCount(data.notifications?.length || 0);
+        // Count only pending verification requests
+        const pendingCount = data.requests?.filter(org => org.verification_status === 'pending').length || 0;
+        setPendingVerificationCount(pendingCount);
       }
     } catch (err) {
-      console.error('Failed to fetch notification count:', err);
+      console.error('Failed to fetch pending verification count:', err);
     }
   };
 
   useEffect(() => {
-    fetchNotificationCount();
+    fetchPendingVerificationCount();
   }, [user.userType]);
 
-  const navItems = getNavigation(notificationCount)[user.userType] || [];
+  const navItems = getNavigation(user.userType, pendingVerificationCount);
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
@@ -143,7 +157,7 @@ export default function DashboardSidebar({ user, onLogout, mobile = false, onClo
               {user.firstName} {user.lastName}
             </p>
             <p className="text-xs text-gray-500 capitalize">
-              {user.userType}
+              {user.userType === 'nonprofit' ? 'Site' : user.userType === 'university_admin' ? 'University Admin' : user.userType}
             </p>
           </div>
         </div>

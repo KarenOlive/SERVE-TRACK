@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, ChevronDown, User, LogOut } from 'lucide-react';
-import { getUserDashboardPath } from '@/lib/userUtils';
+import { getUserDashboardPath, getUserDisplayName } from '@/lib/userUtils';
 
 const roleBadges = {
     student: {
@@ -20,12 +20,22 @@ const roleBadges = {
       text: 'text-purple-600',
       bg: 'bg-purple-100',
       border: 'border-purple-600'
+    },
+    university_admin: {
+    
+      text: 'text-indigo-600',
+      bg: 'bg-indigo-100',
+      border: 'border-indigo-600'
     }
   };
 
 export default function DashboardHeader({ user, onMenuClick, onLogout }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const theme = roleBadges[user.userType];
+ // Add fallback to prevent undefined theme
+ const theme = roleBadges[user.userType] || roleBadges.admin;
+
+ // Get display name for user type
+ const userTypeDisplay = getUserDisplayName(user.userType);
 
   return (
     <header className="flex-shrink-0 bg-white border-b border-gray-200">
@@ -52,7 +62,7 @@ export default function DashboardHeader({ user, onMenuClick, onLogout }) {
         <div className="flex items-center space-x-4">
           {/* Role badge */}
           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${theme.bg} ${theme.text} ${theme.border} capitalize`}>
-            {user.userType}
+            {userTypeDisplay}
           </span>
 
           {/* User menu */}

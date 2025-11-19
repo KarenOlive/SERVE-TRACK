@@ -1,11 +1,13 @@
 import db from '../../../../lib/database';
-import { getCurrentUser } from '../../../../lib/auth';
+import { getCurrentUser, userHasRole, isAnyAdmin, getUniversityAdminDetails } from '../../../../lib/auth';
 import updateSiteVerification from '@/lib/updateSiteVerification';
 
 export async function GET(request) {
   try {
     const user = getCurrentUser(request);
-    if (!user || user.userType !== 'admin') {
+
+    // Allow both system admins and university admins
+    if (!user || !(await isAnyAdmin(user.id))) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
@@ -43,8 +45,22 @@ export async function GET(request) {
 export async function PUT(request) {
   try {
     const user = getCurrentUser(request);
-    if (!user || user.userType !== 'admin') {
+
+    // Allow both system admins and university admins
+    if (!user || !(await isAnyAdmin(user.id))) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+
+    // If user is a university admin, verify they have permission to manage nonprofits
+    if (await userHasRole(user.id, 'university_admin')) {
+      const universityDetails = await getUniversityAdminDetails(user.id);
+      
+      if (!universityDetails || !universityDetails.can_manage_nonprofits) {
+        return new Response(
+          JSON.stringify({ error: 'You do not have permission to manage nonprofits' }),
+          { status: 403 }
+        );
+      }
     }
 
     const body = await request.json();
