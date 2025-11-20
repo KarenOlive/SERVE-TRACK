@@ -1,5 +1,5 @@
 import db from '@/lib/database';
-import { getCurrentUser, userHasRole } from '@/lib/auth';
+import { getCurrentUser, userHasRole, getUniversityAdminDetails } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request) {
@@ -7,9 +7,12 @@ export async function POST(request) {
   try {
     const currentUser = getCurrentUser(request);
     
-    // Only system admins can create other admins
-    if (!currentUser || !(await userHasRole(currentUser.id, 'admin'))) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    // Check if user is authorized to create admins
+    const isSystemAdmin = await userHasRole(currentUser.id, 'admin');
+    const isUniversityAdmin = await userHasRole(currentUser.id, 'university_admin');
+      
+    if (!currentUser || (!isSystemAdmin && !isUniversityAdmin)) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
     const { 
@@ -21,6 +24,34 @@ export async function POST(request) {
       universityId, // only for university admins
       permissions // { can_manage_nonprofits, can_manage_students, can_manage_admins }
     } = await request.json();
+    
+    // Validate permissions based on user type
+    if (isUniversityAdmin) {
+      // University admins can only create university admins for their university
+      if (role !== 'university_admin') {
+        return new Response(
+          JSON.stringify({ error: 'University admins can only create other university admins' }),
+          { status: 400 }
+        );
+      }
+
+      // University admins can only assign their own university
+      const universityDetails = await getUniversityAdminDetails(currentUser.id);
+      if (universityId !== universityDetails.university_id) {
+        return new Response(
+          JSON.stringify({ error: 'You can only create admins for your own university' }),
+          { status: 400 }
+        );
+      }
+
+      // University admins must have permission to manage other admins
+      if (!universityDetails.can_manage_admins) {
+        return new Response(
+          JSON.stringify({ error: 'You do not have permission to create other admins' }),
+          { status: 403 }
+        );
+      }
+    }
 
     // Check if user already exists
     const [existingUsers] = await db.execute(
@@ -100,7 +131,7 @@ export async function POST(request) {
             universityId, 
             permissions?.can_manage_nonprofits ? 1 : 0, 
             permissions?.can_manage_students ? 1 : 0, 
-            permissions?.can_manage_admins ? 1 : 0
+            // University admins created by other university admins cannot manage admins by default
           ]
         );
       }
@@ -137,19 +168,22 @@ export async function POST(request) {
   }
 }
 
-// Get all admin users (both system and university admins)
-export async function GET(request) {
+
+  // Get all admin users (both system and university admins)
+  export async function GET(request) {
   try {
     const currentUser = getCurrentUser(request);
     
-    // Only system admins can view all admin users
-    if (!currentUser || !(await userHasRole(currentUser.id, 'admin'))) {
+    // Check if user is authorized to view admin users
+    const isSystemAdmin = await userHasRole(currentUser.id, 'admin');
+    const isUniversityAdmin = await userHasRole(currentUser.id, 'university_admin');
+    
+    if (!currentUser || (!isSystemAdmin && !isUniversityAdmin)) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    // Get admin users (those with admin or university_admin role)
-    const [adminUsers] = await db.execute(
-      `SELECT 
+    let query = `
+      SELECT 
         u.id, u.email, u.first_name, u.last_name, u.created_at,
         r.name as role,
         ua.university_id,
@@ -163,19 +197,51 @@ export async function GET(request) {
        LEFT JOIN university_admins ua ON u.id = ua.user_id
        LEFT JOIN universities univ ON ua.university_id = univ.id
        WHERE r.name IN ('admin', 'university_admin')
+    `;
+
+    const params = [];
+
+    // If university admin, only show admins from their university
+    if (isUniversityAdmin) {
+      const universityDetails = await getUniversityAdminDetails(currentUser.id);
+      if (universityDetails) {
+        // Only show university admins from the same university, NOT system admins
+        query += ` AND r.name = 'university_admin' AND ua.university_id = ?`;
+        params.push(universityDetails.university_id);
+      } else {
+        // If no university details, show nothing
+        query += ` AND 1 = 0`; // This will return no results
+      }
+    }
+
+    query += `
        ORDER BY 
          CASE 
            WHEN r.name = 'admin' THEN 1
            WHEN r.name = 'university_admin' THEN 2
          END,
          univ.name, 
-         u.created_at DESC`
-    );
+         u.created_at DESC`;
 
-    // Get universities for dropdown
-    const [universities] = await db.execute(
-      `SELECT id, name, code FROM universities ORDER BY name`
-    );
+    const [adminUsers] = await db.execute(query, params);
+
+  // Get universities for dropdown
+    let universities = [];
+    if (isSystemAdmin) {
+      // System admins can see all universities
+      [universities] = await db.execute(
+        `SELECT id, name, code FROM universities ORDER BY name`
+      );
+    } else if (isUniversityAdmin) {
+      // University admins can only see their own university
+      const universityDetails = await getUniversityAdminDetails(currentUser.id);
+      if (universityDetails) {
+        [universities] = await db.execute(
+          `SELECT id, name, code FROM universities WHERE id = ?`,
+          [universityDetails.university_id]
+        );
+      }
+    }
 
     return new Response(
       JSON.stringify({ 

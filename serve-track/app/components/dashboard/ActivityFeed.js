@@ -35,6 +35,19 @@ export default function ActivityFeed({ activities = [] }) {
     }
   };
 
+  // Generate a unique key for each activity
+  const generateActivityKey = (activity, index) => {
+    // Use a combination of properties to create a unique key
+    if (activity.id) {
+      return `activity-${activity.id}`;
+    }
+    if (activity.timestamp && activity.type) {
+      return `activity-${activity.timestamp}-${activity.type}-${index}`;
+    }
+    // Fallback to index with a prefix
+    return `activity-${index}-${Date.now()}`;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -53,7 +66,7 @@ export default function ActivityFeed({ activities = [] }) {
         <div className="space-y-4">
           {activities.map((activity, index) => (
             <div
-              key={activity.id || index}
+              key={generateActivityKey(activity, index)}
               className="flex items-start space-x-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
             >
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm">

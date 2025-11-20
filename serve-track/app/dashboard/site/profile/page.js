@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useToast } from '@/app/hooks/useToast';
 import ProfileForm from '@/app/components/dashboard/ProfileForm';
-import { AlertTriangle, CheckCircle, Clock, Edit, MailCheck } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, Edit, MailCheck, UserCheck } from 'lucide-react';
 
 export default function SiteProfilePage() {
   const [profile, setProfile] = useState(null);
@@ -103,7 +103,7 @@ export default function SiteProfilePage() {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'verified':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
+        return <UserCheck className="w-5 h-5 text-green-600" />;
       case 'pending':
         return <Clock className="w-5 h-5 text-yellow-600" />;
       default:

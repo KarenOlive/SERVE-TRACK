@@ -83,7 +83,7 @@ export default function AdminUsers() {
     setResettingPasswordId(adminId);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/admin/admin-users/reset-password', {
+      const res = await fetch('/api/admin/admin-users/password-reset', {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json', 
@@ -148,6 +148,7 @@ export default function AdminUsers() {
       </div>
 
       {/* System Admins Section */}
+      {systemAdmins.length >= 0 && (
       <section className="space-y-4">
         <div className="flex items-center space-x-2">
           <Shield className="w-6 h-6 text-purple-600" />
@@ -205,6 +206,7 @@ export default function AdminUsers() {
           </div>
         )}
       </section>
+      )}
 
       {/* University Admins Section */}
       <section className="space-y-4">

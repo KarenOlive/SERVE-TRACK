@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  X, LogOut, Home, User, Search, FileText, Clock, BarChart3, TrendingUp, Building, Briefcase, Mail, CheckSquare, CheckCircle2, GraduationCap, Users, Settings,Bell
+  X, LogOut, Home, User, Search, FileText, Clock, BarChart3, TrendingUp, Building, Briefcase, Mail, CheckSquare, CheckCircle2, GraduationCap, Users, Settings,Bell, TimerIcon
 } from 'lucide-react';
 
 import { getUserDashboardPath } from '@/lib/userUtils'; 
@@ -48,10 +48,10 @@ const getNavigation = (userType, pendingVerificationCount) => {
     student: [
       { name: 'Dashboard', href: '/dashboard', icon: Home },
       { name: 'My Profile', href: `/dashboard/${basePath}/profile`, icon: User },
-      { name: 'Browse Opportunities', href: '/opportunities', icon: Search },
+      { name: 'Browse Opportunities', href: 'dashboard/student/opportunities', icon: Search },
       { name: 'My Applications', href: `/dashboard/${basePath}/applications`, icon: FileText },
       { name: 'Log Hours', href: `/dashboard/${basePath}/hours/log`, icon: Clock },
-      { name: 'Hour History', href: `/dashboard/${basePath}/hours`, icon: BarChart3 },
+      { name: 'Hour History', href: `/dashboard/${basePath}/hours`, icon: TimerIcon },
       { name: 'Progress Reports', href: `/dashboard/${basePath}/reports`, icon: TrendingUp },
     ],
     nonprofit: [
