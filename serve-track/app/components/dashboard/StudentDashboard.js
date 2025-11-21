@@ -6,6 +6,18 @@ import ProgressBar from '../ui/ProgressBar';
 import ActivityFeed from '../dashboard/ActivityFeed';
 import Link from 'next/link';
 
+// Lucide Icons
+import { 
+  Search, 
+  Clock, 
+  ClipboardList, 
+  CheckCircle, 
+  FileEdit, 
+  Target, 
+  MessageCircleWarning,
+  Timer
+} from 'lucide-react';
+
 export default function StudentDashboard({ user }) {
   const [stats, setStats] = useState(null);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -55,7 +67,7 @@ export default function StudentDashboard({ user }) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="text-red-500 text-4xl mb-3">⚠️</div>
+          <div className="text-red-500 text-4xl mb-3"><MessageCircleWarning className="w-5 h-5 text-blue-600" /></div>
           <p className="text-gray-900 font-medium">{error}</p>
           <button 
             onClick={() => window.location.reload()}
@@ -109,21 +121,21 @@ export default function StudentDashboard({ user }) {
               title="Verified Hours"
               value={stats.verifiedHours}
               color="blue"
-              icon="✅"
+              icon={<CheckCircle className="w-6 h-6 text-blue-700" />}
               subtitle="Approved by organizations"
             />
             <StatCard
               title="Pending Applications"
               value={stats.pendingApplications}
               color="blue"
-              icon="📝"
+              icon={<FileEdit className="w-6 h-6 text-blue-700" />}
               subtitle="Awaiting response"
             />
             <StatCard
               title="Hours Needed"
               value={stats.hoursNeeded}
               color="blue"
-              icon="🎯"
+              icon={<Timer className="w-6 h-6 text-blue-700" />}
               subtitle="To complete requirement"
             />
           </div>
@@ -138,12 +150,14 @@ export default function StudentDashboard({ user }) {
             Quick Actions
           </h3>
           <div className="space-y-3">
+
+            {/* Browse Opportunities */}
             <Link 
-              href="/opportunities"
+              href="/dashboard/student/opportunities"
               className="block w-full text-left p-4 rounded-lg border border-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
             >
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">🔍</span>
+                <Search className="w-6 h-6 text-blue-700" />
                 <div>
                   <p className="font-medium text-blue-900">Browse Opportunities</p>
                   <p className="text-sm text-blue-700">Find volunteer positions that match your interests</p>
@@ -151,12 +165,13 @@ export default function StudentDashboard({ user }) {
               </div>
             </Link>
             
+            {/* Log Hours */}
             <Link 
               href="/dashboard/student/hours/log"
               className="block w-full text-left p-4 rounded-lg border border-green-600 bg-green-50 hover:bg-green-100 transition-colors"
             >
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">⏱️</span>
+                <Clock className="w-6 h-6 text-green-700" />
                 <div>
                   <p className="font-medium text-green-900">Log Hours</p>
                   <p className="text-sm text-green-700">Record your completed service hours</p>
@@ -164,18 +179,20 @@ export default function StudentDashboard({ user }) {
               </div>
             </Link>
 
+            {/* My Applications */}
             <Link 
               href="/dashboard/student/applications"
               className="block w-full text-left p-4 rounded-lg border border-purple-600 bg-purple-50 hover:bg-purple-100 transition-colors"
             >
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">📋</span>
+                <ClipboardList className="w-6 h-6 text-purple-700" />
                 <div>
                   <p className="font-medium text-purple-900">My Applications</p>
                   <p className="text-sm text-purple-700">Track your opportunity applications</p>
                 </div>
               </div>
             </Link>
+
           </div>
         </div>
 

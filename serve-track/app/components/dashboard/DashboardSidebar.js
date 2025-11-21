@@ -48,7 +48,7 @@ const getNavigation = (userType, pendingVerificationCount) => {
     student: [
       { name: 'Dashboard', href: '/dashboard', icon: Home },
       { name: 'My Profile', href: `/dashboard/${basePath}/profile`, icon: User },
-      { name: 'Browse Opportunities', href: 'dashboard/student/opportunities', icon: Search },
+      { name: 'Browse Opportunities', href: `/dashboard/${basePath}/opportunities`, icon: Search },
       { name: 'My Applications', href: `/dashboard/${basePath}/applications`, icon: FileText },
       { name: 'Log Hours', href: `/dashboard/${basePath}/hours/log`, icon: Clock },
       { name: 'Hour History', href: `/dashboard/${basePath}/hours`, icon: TimerIcon },
