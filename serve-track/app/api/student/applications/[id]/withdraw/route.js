@@ -1,5 +1,5 @@
-import db from '../../../../../../../lib/database';
-import { getCurrentUser } from '../../../../../../../lib/auth';
+import db from '@/lib/database';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function PUT(request, { params }) {
   try {
