@@ -1,5 +1,5 @@
 'use client';
-
+import {Activity, ActivityIcon} from 'lucide-react';
 export default function ActivityFeed({ activities = [] }) {
   const getStatusColor = (status) => {
     switch (status) {
@@ -12,6 +12,8 @@ export default function ActivityFeed({ activities = [] }) {
       case 'new':
         return 'bg-blue-100 text-blue-800';
       case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'approved':
         return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -56,7 +58,7 @@ export default function ActivityFeed({ activities = [] }) {
       
       {activities.length === 0 ? (
         <div className="text-center py-8">
-          <div className="text-4xl mb-3">📊</div>
+          <div className="text-4xl mb-3"><Activity className='w-12 h-12 text-blue-500 mx-auto mb-4'/></div>
           <p className="text-gray-500">No recent activity</p>
           <p className="text-sm text-gray-400 mt-1">
             Your activity will appear here as you use the platform
@@ -70,7 +72,7 @@ export default function ActivityFeed({ activities = [] }) {
               className="flex items-start space-x-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
             >
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm">
-                {activity.icon || '📝'}
+                {activity.icon || <ActivityIcon className=''/>}
               </div>
               
               <div className="flex-1 min-w-0">
