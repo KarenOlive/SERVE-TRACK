@@ -546,7 +546,7 @@ export default function LogHoursPage() {
             No Approved Opportunities
           </h3>
           <p className="text-yellow-700">
-            You need to have approved applications before you can log hours. 
+            You need to have approved application(s) to opportunities before you can log hours. 
             Browse opportunities and get approved to start tracking your volunteer work.
           </p>
         </div>

@@ -74,7 +74,7 @@ export async function GET(request) {
         CONCAT('New application for ', o.title) as message,
         a.applied_at as timestamp,
         a.status,
-        '📨' as icon
+        '📝' as icon
        FROM applications a
        JOIN opportunities o ON a.opportunity_id = o.id
        WHERE o.site_id = ?

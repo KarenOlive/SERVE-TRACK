@@ -5,7 +5,7 @@ import StatCard from '../ui/StatCard';
 import ActivityFeed from '../dashboard/ActivityFeed';
 import Link from 'next/link';
 import { 
-  GraduationCap, Building, Clock, Users, BarChart3, Shield, AlertTriangle, Hourglass } from 'lucide-react';
+  GraduationCap, Building, Bell, Users, BarChart3, Shield, AlertTriangle, Hourglass } from 'lucide-react';
 
 export default function AdminDashboardHome({ user }) {
   const [stats, setStats] = useState(null);
@@ -103,28 +103,28 @@ export default function AdminDashboardHome({ user }) {
           title={isUniversityAdmin ? "University Students" : "Total Students"}
           value={stats.totalStudents?.toLocaleString() || '0'}
           color={isUniversityAdmin ? "indigo" : "purple"}
-          icon={<GraduationCap className="w-6 h-6" />}
-          subtitle={isUniversityAdmin ? "Your university" : "Registered users"}
+          icon={<GraduationCap className="w-7 h-7 text-indigo-500" />}
+          subtitle={isUniversityAdmin ? "From your university" : "Registered users"}
         />
         <StatCard
           title={isUniversityAdmin ? "Partner Organizations" : "Organizations"}
           value={stats.totalOrganizations || '0'}
           color={isUniversityAdmin ? "indigo" : "purple"}
-          icon={<Building className="w-6 h-6" />}
+          icon={<Building className="w-7 h-7 text-indigo-500" />}
           subtitle={isUniversityAdmin ? "Working with your university" : "Nonprofit partners"}
         />
         <StatCard
           title="Pending Approvals"
           value={stats.pendingApprovals || '0'}
           color={isUniversityAdmin ? "indigo" : "purple"}
-          icon={<Hourglass className="w-6 h-6" />}
+          icon={<Bell className="w-7 h-7 text-indigo-500" />}
           subtitle="Require attention"
         />
         <StatCard
           title={isUniversityAdmin ? "Active Users" : "System Users"}
           value={stats.systemUsers?.toLocaleString() || stats.activeUsers?.toLocaleString() || '0'}
           color={isUniversityAdmin ? "indigo" : "purple"}
-          icon={<Users className="w-6 h-6" />}
+          icon={<Users className="w-7 h-7 text-indigo-500" />}
           subtitle={isUniversityAdmin ? "From your university" : "Total platform users"}
         />
       </div>

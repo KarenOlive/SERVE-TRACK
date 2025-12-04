@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  X, LogOut, Home, User, Search, FileText, Clock, BarChart3, TrendingUp, Building, Briefcase, Mail, CheckSquare, CheckCircle2, GraduationCap, Users, Settings,Bell, TimerIcon
+  X, LogOut, Home, User, Search, FileText, Clock, BarChart3, TrendingUp, Building, Briefcase, ClipboardList, CheckSquare, CheckCircle2, GraduationCap, Users, Settings,Bell, TimerIcon, ClipboardCheck, ClipboardCheckIcon
 } from 'lucide-react';
 
 import { getUserDashboardPath } from '@/lib/userUtils'; 
@@ -52,15 +52,15 @@ const getNavigation = (userType, pendingVerificationCount) => {
       { name: 'My Applications', href: `/dashboard/${basePath}/applications`, icon: FileText },
       { name: 'Log Hours', href: `/dashboard/${basePath}/hours/log`, icon: Clock },
       { name: 'Hour History', href: `/dashboard/${basePath}/hours`, icon: TimerIcon },
-      { name: 'Progress Reports', href: `/dashboard/${basePath}/reports`, icon: TrendingUp },
+      { name: 'Progress Reports', href: `/dashboard/${basePath}/progressreport`, icon: ClipboardCheckIcon },
     ],
     nonprofit: [
       { name: 'Dashboard', href: '/dashboard', icon: Home },
       { name: 'Organization Profile', href: `/dashboard/${basePath}/profile`, icon: Building },
       { name: 'Manage Opportunities', href: `/dashboard/${basePath}/opportunities`, icon: Briefcase },
-      { name: 'Student Applications', href: `/dashboard/${basePath}/applications`, icon: Mail },
+      { name: 'Student Applications', href: `/dashboard/${basePath}/applications`, icon: ClipboardList },
       { name: 'Hour Verification', href: `/dashboard/${basePath}/verifications`, icon: CheckSquare },
-      { name: 'Impact Reports', href: `/dashboard/${basePath}/reports`, icon: BarChart3 },
+      // { name: 'Impact Reports', href: `/dashboard/${basePath}/reports`, icon: BarChart3 },
     ],
     admin: [
       { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -88,7 +88,7 @@ const getNavigation = (userType, pendingVerificationCount) => {
         badge: pendingVerificationCount > 0 ? pendingVerificationCount : null
       },
       { name: 'User Management', href: `/dashboard/admin/users`, icon: Users },
-      { name: 'Analytics', href: `/dashboard/admin/analytics`, icon: BarChart3 },
+      { name: 'Student Attendance', href: `/dashboard/admin/attendance`, icon: ClipboardCheck },
       { name: 'Reports', href: `/dashboard/admin/reports`, icon: TrendingUp },
     ]
   };

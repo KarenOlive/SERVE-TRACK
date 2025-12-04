@@ -221,7 +221,7 @@ export default function SiteProfilePage() {
           <div className="flex space-x-3">
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center bg-green-800 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
             >
               <Edit className="w-4 h-4 mr-2" />
               {profile?.profile_complete ? 'Update Profile' : 'Complete Profile'}

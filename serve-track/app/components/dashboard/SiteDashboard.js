@@ -18,7 +18,7 @@ import {
   AlertTriangle,
   Hourglass,
   Loader2,
-  X
+  X, Bell
 } from 'lucide-react';
 
 export default function SiteDashboard({ user }) {
@@ -226,28 +226,28 @@ export default function SiteDashboard({ user }) {
           title="Total Volunteers"
           value={stats.totalVolunteers}
           color="green"
-          icon={<Users className="w-6 h-6" />}
+          icon={<Users className="w-7 h-7" />}
           subtitle="All time"
         />
         <StatCard
           title="Pending Applications"
           value={stats.pendingApplications}
           color="green"
-          icon={<FileText className="w-6 h-6" />}
+          icon={<Bell className="w-7 h-7" />}
           subtitle="Need review"
         />
         <StatCard
           title="Hours This Month"
           value={stats.hoursThisMonth}
           color="green"
-          icon={<Clock className="w-6 h-6" />}
+          icon={<Clock className="w-7 h-7" />}
           subtitle="Volunteer hours"
         />
         <StatCard
           title="Active Opportunities"
           value={stats.activeOpportunities}
           color="green"
-          icon={<Briefcase className="w-6 h-6" />}
+          icon={<Briefcase className="w-7 h-7" />}
           subtitle="Currently listed"
         />
       </div>

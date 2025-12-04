@@ -4,6 +4,7 @@ export default function StatCard({ title, value, color, icon, subtitle }) {
     green: 'bg-green-50 border-green-200 text-green-900',
     orange: 'bg-orange-50 border-orange-200 text-orange-900',
     purple: 'bg-purple-50 border-purple-200 text-purple-900',
+    indigo: 'bg-indigo-50 border-indigo-200 text-indigo-900',
     gray: 'bg-gray-100'
   };
   
@@ -19,7 +20,7 @@ export default function StatCard({ title, value, color, icon, subtitle }) {
         {typeof icon === 'string' ? (
           <span className="text-2xl">{icon}</span>
         ) : (
-          <div className="text-2xl opacity-80">
+          <div className="text-2xl opacity-90">
             {icon}
           </div>
         )}

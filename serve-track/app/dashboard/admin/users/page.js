@@ -25,6 +25,7 @@ export default function AdminUsers() {
         headers: { Authorization: `Bearer ${token}` } 
       });
       const data = await res.json();
+      console.log(data)
       if (!res.ok) throw new Error(data.error || 'Failed to fetch admins');
       setAdmins(data.admins || []);
       setUniversities(data.universities || []);
@@ -148,7 +149,7 @@ export default function AdminUsers() {
       </div>
 
       {/* System Admins Section */}
-      {systemAdmins.length >= 0 && (
+      {systemAdmins.length > 0 && (
       <section className="space-y-4">
         <div className="flex items-center space-x-2">
           <Shield className="w-6 h-6 text-purple-600" />
