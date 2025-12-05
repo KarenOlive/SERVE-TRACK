@@ -161,13 +161,13 @@ export default function LoginPage() {
           <div className="space-y-3">
             <Link 
               href="/register/student" 
-              className="block w-full bg-blue-700 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition text-center font-medium"
+              className="block w-full bg-blue-700 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center font-medium"
             >
               Register as Student
             </Link>
             <Link 
               href="/register/sites" 
-              className="block w-full bg-green-700 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center font-medium"
+              className="block w-full bg-green-700 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition text-center font-medium"
             >
               Register as Organization
             </Link>
