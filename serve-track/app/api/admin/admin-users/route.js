@@ -131,6 +131,7 @@ export async function POST(request) {
             universityId, 
             permissions?.can_manage_nonprofits ? 1 : 0, 
             permissions?.can_manage_students ? 1 : 0, 
+            permissions?.can_manage_admins ? 1 : 0, 
             // University admins created by other university admins cannot manage admins by default
           ]
         );

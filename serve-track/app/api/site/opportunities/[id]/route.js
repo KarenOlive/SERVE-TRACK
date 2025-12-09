@@ -79,7 +79,6 @@ export async function PUT(request, context) {
       description: 'description',
       startDate: 'start_date',
       endDate: 'end_date',
-      estimatedHours: 'estimated_hours',
       volunteersNeeded: 'volunteers_needed',
       status: 'status'
     };

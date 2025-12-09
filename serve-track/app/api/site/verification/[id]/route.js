@@ -22,14 +22,14 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    // Verify the hour log belongs to this nonprofit's opportunity
-    const [hourLogs] = await db.execute(
-      `SELECT hl.*, o.required_hours
-       FROM hour_logs hl
-       JOIN opportunities o ON hl.opportunity_id = o.id
-       WHERE hl.id = ? AND o.site_id = ?`,
-      [id, user.id]
-    );
+   // Verify the hour log belongs to this nonprofit's opportunity
+   const [hourLogs] = await db.execute(
+    `SELECT hl.*
+     FROM hour_logs hl
+     JOIN opportunities o ON hl.opportunity_id = o.id
+     WHERE hl.id = ? AND o.site_id = ?`,
+    [id, user.id]
+  );
 
     if (hourLogs.length === 0) {
       return new Response(
@@ -77,15 +77,16 @@ export async function PATCH(request, { params }) {
     if (status === 'verified') {
       const [hourSummary] = await db.execute(
         `SELECT 
-          hl.student_id,
-          hl.opportunity_id,
-          SUM(CASE WHEN hl.status = 'verified' THEN hl.hours ELSE 0 END) as total_verified,
-          o.required_hours
-         FROM hour_logs hl
-         JOIN opportunities o ON hl.opportunity_id = o.id
-         WHERE hl.student_id = ? AND hl.opportunity_id = ?
-         GROUP BY hl.student_id, hl.opportunity_id, o.required_hours`,
-        [hourLog.student_id, hourLog.opportunity_id]
+        hl.student_id,
+        hl.opportunity_id,
+        SUM(CASE WHEN hl.status = 'verified' THEN hl.hours ELSE 0 END) as total_verified,
+        uni.required_hours as university_required_hours
+       FROM hour_logs hl
+       JOIN student_profiles sp ON hl.student_id = sp.user_id
+       JOIN universities uni ON sp.university_id = uni.id
+       WHERE hl.student_id = ? AND hl.opportunity_id = ?
+       GROUP BY hl.student_id, hl.opportunity_id, uni.required_hours`,
+      [hourLog.student_id, hourLog.opportunity_id]
       );
 
       if (hourSummary.length > 0) {
@@ -100,8 +101,8 @@ export async function PATCH(request, { params }) {
           [summary.total_verified, hourLog.student_id, hourLog.opportunity_id]
         );
 
-        // Check if hours requirement is met and mark site_manager_verified
-        if (summary.total_verified >= summary.required_hours) {
+        // Check if hours requirement is met (against university required hours) and mark site_manager_verified
+        if (summary.total_verified >= summary.university_required_hours) {
           await db.execute(
             `UPDATE applications 
              SET site_manager_verified = TRUE,

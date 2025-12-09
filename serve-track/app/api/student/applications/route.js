@@ -18,7 +18,6 @@ export async function GET(request) {
         o.description as opportunity_description,
         o.start_date,
         o.end_date,
-        o.estimated_hours,
         sp.organization_name,
         sp.location,
         u.first_name as reviewer_first_name,

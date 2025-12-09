@@ -22,7 +22,6 @@ export async function GET(request, { params }) {
         o.description as opportunity_description,
         o.start_date,
         o.end_date,
-        o.estimated_hours,
         o.volunteers_needed,
         sp.organization_name,
         sp.location,

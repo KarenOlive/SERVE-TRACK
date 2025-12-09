@@ -13,10 +13,6 @@ const OpportunitySchema = z
     description: z.string().min(1, 'Description is required'),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
-    estimatedHours: z
-      .string()
-      .optional()
-      .transform((v) => (v ? Number(v) : '')),
     volunteersNeeded: z
       .string()
       .min(1)
@@ -49,7 +45,6 @@ export default function OpportunityForm({ onSubmit, onCancel, initialData = {}, 
       description: '',
       startDate: '',
       endDate: '',
-      estimatedHours: '',
       volunteersNeeded: 1,
     },
   });
@@ -73,7 +68,6 @@ export default function OpportunityForm({ onSubmit, onCancel, initialData = {}, 
         description: initialData.description || '',
         startDate: safeDate(initialData.startDate || initialData.start_date),
         endDate: safeDate(initialData.endDate || initialData.end_date),
-        estimatedHours: initialData.estimatedHours || initialData.estimated_hours || '',
         volunteersNeeded: initialData.volunteersNeeded || initialData.volunteers_needed || 1,
       });
     }
@@ -138,19 +132,7 @@ export default function OpportunityForm({ onSubmit, onCancel, initialData = {}, 
 
       {/* Hours and Volunteers */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Hours</label>
-          <input
-            type="number"
-            min="1"
-            {...register('estimatedHours')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="e.g., 10"
-          />
-          {errors.estimatedHours && (
-            <p className="text-sm text-red-600 mt-1">{errors.estimatedHours.message}</p>
-          )}
-        </div>
+      
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

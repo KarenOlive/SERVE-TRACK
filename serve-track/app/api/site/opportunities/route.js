@@ -50,7 +50,6 @@ export async function POST(request) {
       description,
       startDate,
       endDate,
-      estimatedHours,
       volunteersNeeded,
     } = await request.json();
 
@@ -61,9 +60,9 @@ export async function POST(request) {
     // Insert new opportunity
     const [result] = await db.execute(
       `INSERT INTO opportunities 
-         (title, description, site_id, start_date, end_date, estimated_hours, volunteers_needed)
+         (title, description, site_id, start_date, end_date, volunteers_needed)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [title, description, user.id, startDate, endDate, estimatedHours, volunteersNeeded]
+      [title, description, user.id, startDate, endDate, volunteersNeeded]
     );
 
     // Get the newly created opportunity including location

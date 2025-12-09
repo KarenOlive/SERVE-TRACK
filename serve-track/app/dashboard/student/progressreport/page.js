@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { 
-  Download, CheckCircle, XCircle, Clock, Calendar,Building,BookOpen,GraduationCap,AlertCircle,ExternalLink, RefreshCcw
+  Download, CheckCircle, Clock, Calendar,Building,BookOpen,GraduationCap,AlertCircle,ExternalLink, RefreshCcw
 } from 'lucide-react';
+import Link from 'next/link';
 import { useToast } from '../../../hooks/useToast';
 
 export default function ProgressReportPage() {
@@ -13,7 +13,6 @@ export default function ProgressReportPage() {
   const [downloading, setDownloading] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const { addToast, ToastContainer } = useToast();
-  const router = useRouter();
 
   
   const fetchApplications = async (isRefresh = false) => {

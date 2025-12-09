@@ -19,7 +19,7 @@ export default function AdminRejectVerificationModal({ isOpen, onClose, onConfir
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/30">
       <div className="bg-white rounded-lg w-full max-w-lg shadow-xl">
         <div className="p-5">
           <div className="flex justify-between items-start">
