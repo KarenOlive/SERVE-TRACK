@@ -86,7 +86,7 @@ ServeTrack supports three main user roles:
 
 ---
 
-## 🚀 Getting Started (Local Development)
+##  Getting Started (Local Development)
 
 ### Prerequisites
 Ensure you have the following installed:
@@ -118,11 +118,11 @@ npm run migrate
 
 ## Usage Guide
 **Student Workflow**
-Register or log in as a Student
-Browse available volunteer opportunities
-Apply for a suitable opportunity
-Log service hours after participation
-Track approval status and accumulated hours
+- Register or log in as a Student
+- Browse available volunteer opportunities
+- Apply for a suitable opportunity
+- Log service hours after participation
+- Track approval status and accumulated hours
 
 **Organization Workflow**
 - Register as a Nonprofit Organization
